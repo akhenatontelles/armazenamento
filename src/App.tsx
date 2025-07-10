@@ -18,7 +18,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster /> {/* For shadcn/ui toasts via useToast from @/hooks/use-toast */}
       {/* <Sonner /> */} {/* Se Sonner for usado separadamente, mantenha. Se useToast já usa Sonner, pode ser redundante. Assumindo que Toaster é o principal. */}
-      <BrowserRouter>
+      <BrowserRouter basename="/armarzenamento">
         <ThemeToggle /> {/* Global theme toggle */}
         <Routes>
           {/* Public Routes */}
