@@ -2,14 +2,14 @@
 // backend/config/config.php
 
 // Configurações do Banco de Dados
-define('DB_HOST', 'localhost'); // Ou o host do seu DB
-define('DB_USER', 'root');      // Seu usuário do DB
-define('DB_PASS', '');          // Sua senha do DB
-define('DB_NAME', 'armarzenamento'); // Nome do banco de dados que você criará com database_schema.sql
+define('DB_HOST', 'localhost'); // Ou o host do seu DB. Geralmente 'localhost' para HostGator.
+define('DB_USER', 'akhena46_SiteAge');      // Seu usuário do DB
+define('DB_PASS', 'DCVTPgp23c');          // Sua senha do DB
+define('DB_NAME', 'akhena46_capivara.armarzenamento'); // Nome do banco de dados que você criará com database_schema.sql
 
 // Configurações da Aplicação
-define('APP_URL', 'http://localhost:5173'); // URL base do seu frontend React (para links de email, etc.)
-define('API_BASE_URL', '/backend/api');    // URL base para a API
+define('APP_URL', 'http://capivaralab.com/armarzenamento'); // URL base do seu frontend React (para links de email, etc.)
+define('API_BASE_URL', '/armarzenamento/backend/api');    // URL base para a API
 
 // Configurações de Upload
 define('MAX_UPLOAD_SIZE_BYTES', 50 * 1024 * 1024); // 50 MB
@@ -67,7 +67,9 @@ header("Referrer-Policy: strict-origin-when-cross-origin");
 // Permitir requisições de origens específicas (CORS) - Ajuste para seu frontend
 // Se o frontend e backend estiverem em domínios/portas diferentes
 if (isset($_SERVER['HTTP_ORIGIN'])) {
-    $allowed_origins = [APP_URL]; // Adicione outras origens se necessário
+    // APP_URL já está definido como 'http://capivaralab.com/armarzenamento'
+    // Para permitir o acesso do domínio base também, caso o frontend seja acessado sem a subpasta em algum momento (embora o plano seja a subpasta)
+    $allowed_origins = [APP_URL, 'http://capivaralab.com'];
     if (in_array($_SERVER['HTTP_ORIGIN'], $allowed_origins)) {
         header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
         header('Access-Control-Allow-Credentials: true');

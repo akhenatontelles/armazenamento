@@ -18,7 +18,9 @@ const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
 //   que tem 'file-nest-vault' como um alias ou diretório raiz:
 const DEV_API_URL = 'http://localhost/file-nest-vault/backend/api'; // Ajuste conforme necessário
 
-const PROD_API_URL = '/backend/api'; // Assume que o build do frontend está na raiz e o backend está em /backend/api
+// Em produção, o frontend estará em http://capivaralab.com/armarzenamento/
+// e o backend em http://capivaralab.com/armarzenamento/backend/api
+const PROD_API_URL = 'http://capivaralab.com/armarzenamento/backend/api';
 
 const API_BASE_URL = IS_DEVELOPMENT ? DEV_API_URL : PROD_API_URL;
 
