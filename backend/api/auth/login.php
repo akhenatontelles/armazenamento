@@ -1,7 +1,8 @@
 <?php
+session_start();
 // backend/api/auth/login.php
 require_once __DIR__ . '/../../includes/functions.php';
-require_once __DIR__ . '/../../includes/db_connect.php';
+require_once __DIR__ . '/../../includes/db_connect.php'; // Este arquivo DEVE definir a variável global $pdo
 
 secure_session_start();
 
@@ -22,16 +23,18 @@ if (empty($identifier) || empty($password)) {
     json_response(400, ['error' => 'Identificador (nome de usuário ou email) e senha são obrigatórios.']);
 }
 
-$pdo = getPDOConnection();
-if (!$pdo) {
-    json_response(500, ['error' => 'Falha na conexão com o banco de dados.']);
+// Verifica se $pdo foi definido por db_connect.php e é um objeto PDO
+if (!isset($pdo) || !$pdo instanceof PDO) {
+    error_log("Erro crítico em login.php: \$pdo não está definido ou não é um objeto PDO válido após incluir db_connect.php.");
+    json_response(500, ['error' => 'Falha crítica na configuração da conexão com o banco de dados.']);
+    exit;
 }
 
 try {
     // Tenta encontrar o usuário pelo username ou email
     $stmt = $pdo->prepare("SELECT id, username, email, password_hash, role FROM users WHERE username = :identifier OR email = :identifier");
-    $stmt->bindParam(':identifier', $identifier, PDO::PARAM_STR);
-    $stmt->execute();
+    // Passa os parâmetros como um array para execute()
+    $stmt->execute([':identifier' => $identifier]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($user && password_verify($password, $user['password_hash'])) {
@@ -61,11 +64,11 @@ try {
     }
 
 } catch (PDOException $e) {
-    error_log("Erro de PDO em login.php: " . $e->getMessage());
-    json_response(500, ['error' => 'Erro de banco de dados.']); // Mensagem genérica em produção
+    error_log("Erro de PDO em login.php: " . $e->getMessage() . "\nStack trace: " . $e->getTraceAsString());
+    json_response(500, ['error' => 'Erro de banco de dados durante o login.']); // Mensagem genérica em produção
 } catch (Exception $e) {
-    error_log("Erro geral em login.php: " . $e->getMessage());
-    json_response(500, ['error' => 'Ocorreu um erro inesperado.']);
+    error_log("Erro geral em login.php: " . $e->getMessage() . "\nStack trace: " . $e->getTraceAsString());
+    json_response(500, ['error' => 'Ocorreu um erro inesperado durante o login.']);
 }
 
 ?>
