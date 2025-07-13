@@ -2,13 +2,13 @@
 // backend/api/auth/logout.php
 require_once __DIR__ . '/../../includes/functions.php';
 
+// Inicia a sessão de forma segura para poder manipulá-la
 secure_session_start();
 
 // Limpar todas as variáveis da sessão
 $_SESSION = array();
 
-// Se é desejável destruir o cookie da sessão também, note:
-// Isso destruirá a sessão e não apenas os dados da sessão!
+// Destruir o cookie de sessão no navegador, se ele existir
 if (ini_get("session.use_cookies")) {
     $params = session_get_cookie_params();
     setcookie(session_name(), '', time() - 42000,
@@ -17,12 +17,9 @@ if (ini_get("session.use_cookies")) {
     );
 }
 
-// Finalmente, destruir a sessão.
+// Finalmente, destruir a sessão no servidor.
 session_destroy();
 
-// Mesmo que não haja conteúdo, é uma boa prática enviar uma resposta JSON
-// para consistência da API, ou um 204 No Content.
-// Um 200 OK com uma mensagem é geralmente bom para o frontend.
+// Envia uma resposta JSON de sucesso
 json_response(200, ['message' => 'Logout realizado com sucesso.']);
-
 ?>

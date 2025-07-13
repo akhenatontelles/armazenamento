@@ -17,22 +17,19 @@ function secure_session_start(): void {
         $cookieParams = [
             'lifetime' => SESSION_TIMEOUT_SECONDS, // Tempo de vida do cookie da sessão
             'path'     => '/',                     // Caminho onde o cookie estará disponível
-            'domain'   => '',                      // Domínio (vazio para o domínio atual) - ajuste se frontend e backend estiverem em subdomínios diferentes
-            'secure'   => isset($_SERVER['HTTPS']), // Enviar cookie apenas sobre HTTPS (ajuste para false em desenvolvimento local HTTP)
-            'httponly' => true,                     // Cookie acessível apenas via HTTP, não por JavaScript
-            'samesite' => 'Lax'                     // Proteção CSRF (Lax ou Strict)
+            'domain'   => '',      // Vazio para o domínio atual.
+            'secure'   => true,    // CRUCIAL: Força o cookie a ser enviado apenas sobre HTTPS.
+            'httponly' => true,     // Previne acesso ao cookie via JavaScript.
+            'samesite' => 'Lax'     // Proteção CSRF. 'Lax' é um bom padrão.
         ];
         session_set_cookie_params($cookieParams);
 
         session_name(SESSION_NAME); // Define um nome customizado para a sessão
         session_start();
 
-        // Regenera o ID da sessão periodicamente para maior segurança (ex: a cada 30 minutos)
-        // Ou após mudanças de privilégio (login, logout)
-        if (!isset($_SESSION['session_created_at'])) {
-            $_SESSION['session_created_at'] = time();
-        } elseif (time() - $_SESSION['session_created_at'] > 1800) { // 30 minutos
-            session_regenerate_id(true); // Regenera ID e remove o antigo
+        // Regenera o ID da sessão periodicamente para maior segurança
+        if (isset($_SESSION['session_created_at']) && (time() - $_SESSION['session_created_at'] > 1800)) { // a cada 30 minutos
+            session_regenerate_id(true);
             $_SESSION['session_created_at'] = time();
         }
     }
@@ -52,7 +49,7 @@ function json_response(int $statusCode, array $data): void {
         }
     });
 
-    header_remove('Set-Cookie');
+    // Removido: header_remove('Set-Cookie'); - Isso estava impedindo o cookie de sessão de ser enviado na resposta do login/registro.
     header('Content-Type: application/json; charset=utf-8');
     http_response_code($statusCode);
     echo json_encode($data);

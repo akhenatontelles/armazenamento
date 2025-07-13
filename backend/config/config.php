@@ -2,7 +2,7 @@
 // backend/config/config.php
 
 // Defina APP_URL primeiro, pois é usado na lógica CORS para OPTIONS
-define('APP_URL', 'https://capivaralab.com/armarzenamento'); // Mudado para HTTPS
+define('APP_URL', 'https://capivaralab.com/armarzenamento'); // MUDADO PARA HTTPS
 
 // Lidar com requisições OPTIONS (pre-flight) para CORS PRIMEIRO
 if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'OPTIONS') {

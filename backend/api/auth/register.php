@@ -53,16 +53,14 @@ if (!$pdo) {
 try {
     // Verificar se username já existe
     $stmt = $pdo->prepare("SELECT id FROM users WHERE username = :username");
-    $stmt->bindParam(':username', $username, PDO::PARAM_STR);
-    $stmt->execute();
+    $stmt->execute([':username' => $username]);
     if ($stmt->fetch()) {
         json_response(409, ['error' => 'Nome de usuário já está em uso.']); // 409 Conflict
     }
 
     // Verificar se email já existe
     $stmt = $pdo->prepare("SELECT id FROM users WHERE email = :email");
-    $stmt->bindParam(':email', $email, PDO::PARAM_STR);
-    $stmt->execute();
+    $stmt->execute([':email' => $email]);
     if ($stmt->fetch()) {
         json_response(409, ['error' => 'Email já está em uso.']);
     }
@@ -78,11 +76,8 @@ try {
     // Inserir novo usuário
     // Por padrão, a role será 'user' conforme definido no schema do DB
     $stmt = $pdo->prepare("INSERT INTO users (username, email, password_hash) VALUES (:username, :email, :password_hash)");
-    $stmt->bindParam(':username', $username, PDO::PARAM_STR);
-    $stmt->bindParam(':email', $email, PDO::PARAM_STR);
-    $stmt->bindParam(':password_hash', $password_hash, PDO::PARAM_STR);
 
-    if ($stmt->execute()) {
+    if ($stmt->execute([':username' => $username, ':email' => $email, ':password_hash' => $password_hash])) {
         $user_id = $pdo->lastInsertId();
         // Opcional: Logar o usuário automaticamente após o registro
         $_SESSION['user_id'] = (int)$user_id;
