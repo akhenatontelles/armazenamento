@@ -190,17 +190,19 @@ try {
 
     // Inserir registro do arquivo no banco de dados
     $new_file_id = generate_uuid_v4();
+    // Corrigido: A ordem dos placeholders VALUES() deve corresponder à lista de colunas.
     $sql_insert_file = "INSERT INTO files (id, user_id, parent_id, name, type, mime_type, size, server_filename, server_folder_path)
-                        VALUES (:id, :user_id, :parent_id, :name, 'file', :server_filename, :server_folder_path, :size, :mime_type)";
+                        VALUES (:id, :user_id, :parent_id, :name, 'file', :mime_type, :size, :server_filename, :server_folder_path)";
+
     $stmt_insert_file = $pdo->prepare($sql_insert_file);
     $stmt_insert_file->bindParam(':id', $new_file_id, PDO::PARAM_STR);
     $stmt_insert_file->bindParam(':user_id', $user_id, PDO::PARAM_INT);
     $stmt_insert_file->bindParam(':parent_id', $current_parent_id_for_db, $current_parent_id_for_db ? PDO::PARAM_STR : PDO::PARAM_NULL);
-    $stmt_insert_file->bindParam(':name', $original_filename, PDO::PARAM_STR); // Nome original de exibição
+    $stmt_insert_file->bindParam(':name', $original_filename, PDO::PARAM_STR);
+    $stmt_insert_file->bindParam(':mime_type', $file_mime_type, PDO::PARAM_STR);
+    $stmt_insert_file->bindParam(':size', $file_size, PDO::PARAM_INT);
     $stmt_insert_file->bindParam(':server_filename', $server_filename_on_disk, PDO::PARAM_STR);
     $stmt_insert_file->bindParam(':server_folder_path', $path_on_server_for_item, PDO::PARAM_STR);
-    $stmt_insert_file->bindParam(':size', $file_size, PDO::PARAM_INT);
-    $stmt_insert_file->bindParam(':mime_type', $file_mime_type, PDO::PARAM_STR);
 
     if ($stmt_insert_file->execute()) {
         $pdo->commit();
@@ -223,20 +225,25 @@ try {
     }
 
 } catch (PDOException $e) {
-    if($pdo->inTransaction()) $pdo->rollBack();
-    // Remover arquivo físico se o DB falhar?
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    // Se o arquivo foi movido, mas o DB falhou, remove o arquivo órfão.
     if (isset($destination_path_on_server) && file_exists($destination_path_on_server)) {
         @unlink($destination_path_on_server);
     }
     error_log("Erro de PDO em upload.php: " . $e->getMessage());
     json_response(500, ['error' => 'Erro de banco de dados durante o upload.']);
+
 } catch (Exception $e) {
-    if($pdo->inTransaction()) $pdo->rollBack();
-    if (isset($destination_path_on_server) && file_exists($destination_path_on_server) && $e->getMessage() === "Falha ao salvar informações do arquivo no banco de dados.") {
-        // Se o erro específico foi falha no DB após mover o arquivo.
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    // Se o arquivo foi movido, mas ocorreu outra exceção (ex: falha ao criar pasta), remove o arquivo.
+    if (isset($destination_path_on_server) && file_exists($destination_path_on_server)) {
         @unlink($destination_path_on_server);
     }
     error_log("Erro geral em upload.php: " . $e->getMessage());
-    json_response(500, ['error' => 'Erro durante o upload: ' . $e->getMessage()]);
+    json_response(500, ['error' => 'Erro interno do servidor: ' . $e->getMessage()]);
 }
 ?>

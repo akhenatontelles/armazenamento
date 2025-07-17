@@ -201,6 +201,7 @@ const FileExplorer = ({ isAdmin, defaultViewMode = "grid", onViewModeChange }: F
     await apiUploadFiles(selectedFiles, currentFolder);
     setSelectedFiles([]);
     setIsUploadOpen(false);
+    toast({ title: "Sucesso", description: "Arquivos enviados com sucesso!" });
   };
 
   const startRename = (file: FileItem) => {

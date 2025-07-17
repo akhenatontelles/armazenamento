@@ -110,20 +110,20 @@ export const useFileOperations = () => {
   };
 
   // Handles individual file uploads (e.g., from a file input dialog, not folder drag/drop)
-  const uploadFiles = async (selectedFiles: File[], parentId: string | null) => {
+  const uploadFiles = async (selectedFiles: File[], parentId: string | null): Promise<void> => {
     if (selectedFiles.length === 0) return;
 
     setIsLoading(true);
     let successCount = 0;
     let errorCount = 0;
 
-    for (const file of selectedFiles) {
+    // Usar Promise.all para aguardar todos os uploads
+    await Promise.all(selectedFiles.map(async (file) => {
       const formData = new FormData();
       formData.append('file', file);
       if (parentId) {
         formData.append('parentId', parentId);
       }
-      // formData.append('webkitRelativePath', file.webkitRelativePath || ''); // Opcional se este endpoint for genérico
 
       try {
         const response = await fetchWithFormData('/files/upload.php', formData, { method: 'POST' });
@@ -140,12 +140,13 @@ export const useFileOperations = () => {
         console.error(`Error uploading ${file.name}:`, error);
         toast({ title: `Erro de Rede no Upload de ${file.name}`, description: error.message, variant: "destructive", duration: 5000 });
       }
-    }
+    }));
+
     setIsLoading(false);
     if (successCount > 0) {
       toast({ title: "Upload Concluído", description: `${successCount} arquivo(s) enviado(s) com sucesso.` });
     }
-    if (successCount > 0 || errorCount > 0) { // Recarrega se algo foi tentado
+    if (successCount > 0 || errorCount > 0) {
       await fetchFilesAndFolders(parentId);
     }
   };

@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 
 interface FileUploadDialogProps {
   isOpen: boolean;
@@ -31,6 +31,9 @@ export const FileUploadDialog = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Enviar Arquivos</DialogTitle>
+          <DialogDescription>
+            Selecione um ou mais arquivos para carregar no sistema.
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div>
