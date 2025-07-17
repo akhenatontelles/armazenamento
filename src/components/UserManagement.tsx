@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,36 +22,7 @@ interface User {
 }
 
 const UserManagement = () => {
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: "1",
-      username: "admin",
-      email: "admin@megacloud.com",
-      role: "admin",
-      isActive: true,
-      createdAt: new Date("2024-01-01"),
-      lastLogin: new Date("2024-01-20"),
-    },
-    {
-      id: "2",
-      username: "user",
-      email: "user@example.com",
-      role: "user",
-      isActive: true,
-      createdAt: new Date("2024-01-05"),
-      lastLogin: new Date("2024-01-19"),
-    },
-    {
-      id: "3",
-      username: "maria.silva",
-      email: "maria@example.com",
-      role: "user",
-      isActive: false,
-      createdAt: new Date("2024-01-10"),
-      lastLogin: new Date("2024-01-15"),
-    },
-  ]);
-
+  const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
   const [newUser, setNewUser] = useState({
@@ -67,12 +38,38 @@ const UserManagement = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    fetch('/armarzenamento/backend/api/users/list.php', {
+      credentials: 'include',
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.users) {
+          setUsers(
+            data.users.map((user: any) => ({
+              ...user,
+              isActive: !!user.isActive,
+              createdAt: user.createdAt ? new Date(user.createdAt) : new Date(),
+              lastLogin: user.lastLogin ? new Date(user.lastLogin) : undefined,
+            }))
+          );
+        }
+      })
+      .catch(() => {
+        toast({
+          title: 'Erro',
+          description: 'Erro ao buscar usuários do servidor',
+          variant: 'destructive',
+        });
+      });
+  }, []);
+
   const filteredUsers = users.filter(user =>
-    user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchQuery.toLowerCase())
+    user.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.email?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleCreateUser = () => {
+  const handleCreateUser = async () => {
     if (!newUser.username || !newUser.email || !newUser.password) {
       toast({
         title: "Erro",
@@ -81,48 +78,104 @@ const UserManagement = () => {
       });
       return;
     }
-
-    const user: User = {
-      id: `user_${Date.now()}`,
-      username: newUser.username,
-      email: newUser.email,
-      role: newUser.role,
-      isActive: true,
-      createdAt: new Date(),
-    };
-
-    setUsers([...users, user]);
-    setNewUser({ username: "", email: "", password: "", role: "user" });
-    setIsCreateUserOpen(false);
-
-    toast({
-      title: "Usuário criado!",
-      description: `Usuário ${newUser.username} criado com sucesso`,
-    });
+    try {
+      const res = await fetch('/armarzenamento/backend/api/users/create.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(newUser),
+      });
+      const data = await res.json();
+      if (res.ok && data.user) {
+        setUsers([...users, {
+          ...data.user,
+          createdAt: new Date(),
+          lastLogin: undefined,
+        }]);
+        setNewUser({ username: "", email: "", password: "", role: "user" });
+        setIsCreateUserOpen(false);
+        toast({
+          title: "Usuário criado!",
+          description: `Usuário ${data.user.username} criado com sucesso`,
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: data.error || 'Erro ao criar usuário',
+          variant: 'destructive',
+        });
+      }
+    } catch (e) {
+      toast({
+        title: "Erro",
+        description: "Erro ao criar usuário",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleToggleUserStatus = (userId: string) => {
-    setUsers(users.map(user => 
-      user.id === userId 
-        ? { ...user, isActive: !user.isActive }
-        : user
-    ));
-
-    const user = users.find(u => u.id === userId);
-    toast({
-      title: user?.isActive ? "Usuário bloqueado" : "Usuário desbloqueado",
-      description: `${user?.username} foi ${user?.isActive ? "bloqueado" : "desbloqueado"}`,
-    });
+  const handleToggleUserStatus = async (userId: string) => {
+    try {
+      const res = await fetch('/armarzenamento/backend/api/users/toggle_status.php', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ id: userId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setUsers(users.map(user =>
+          user.id === userId ? { ...user, isActive: data.isActive } : user
+        ));
+        toast({
+          title: data.isActive ? "Usuário desbloqueado" : "Usuário bloqueado",
+          description: `Status atualizado com sucesso`,
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: data.error || 'Erro ao atualizar status',
+          variant: 'destructive',
+        });
+      }
+    } catch (e) {
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar status",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDeleteUser = (userId: string) => {
-    const user = users.find(u => u.id === userId);
-    setUsers(users.filter(u => u.id !== userId));
-    
-    toast({
-      title: "Usuário excluído",
-      description: `${user?.username} foi excluído do sistema`,
-    });
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      const res = await fetch('/armarzenamento/backend/api/users/delete.php', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ id: userId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setUsers(users.filter(u => u.id !== userId));
+        toast({
+          title: "Usuário excluído",
+          description: `Usuário removido do sistema`,
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: data.error || 'Erro ao excluir usuário',
+          variant: 'destructive',
+        });
+      }
+    } catch (e) {
+      toast({
+        title: "Erro",
+        description: "Erro ao excluir usuário",
+        variant: "destructive",
+      });
+    }
   };
 
   const navigateToUserPanel = (user: User) => {
@@ -139,23 +192,41 @@ const UserManagement = () => {
     navigate("/dashboard");
   };
 
-  const handlePasswordReset = () => {
-    if (!selectedUser || !newPassword.trim()) return;
-    
-    if (newPassword.length < 6) {
+  const handlePasswordReset = async () => {
+    if (!selectedUser || !newPassword) return;
+    try {
+      const res = await fetch('/armarzenamento/backend/api/users/reset_password.php', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ id: selectedUser.id, newPassword }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast({
+          title: "Senha alterada",
+          description: `Senha de ${selectedUser.username} alterada com sucesso`,
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: data.error || 'Erro ao alterar senha',
+          variant: 'destructive',
+        });
+      }
+    } catch (e) {
       toast({
         title: "Erro",
-        description: "A senha deve ter pelo menos 6 caracteres",
-        variant: "destructive"
+        description: "Erro ao alterar senha",
+        variant: "destructive",
       });
       return;
     }
-
+    // Toast de sucesso após alteração de senha
     toast({
       title: "Senha alterada!",
       description: `Senha de ${selectedUser.username} foi alterada com sucesso`,
     });
-    
     setSelectedUser(null);
     setNewPassword("");
     setIsPasswordResetOpen(false);

@@ -20,7 +20,7 @@ const DEV_API_URL = 'http://localhost/file-nest-vault/backend/api'; // Ajuste co
 
 // Em produção, o frontend estará em http://capivaralab.com/armarzenamento/
 // e o backend em http://capivaralab.com/armarzenamento/backend/api
-const PROD_API_URL = 'http://capivaralab.com/armarzenamento/backend/api';
+const PROD_API_URL = 'https://capivaralab.com/armarzenamento/backend/api';
 
 const API_BASE_URL = IS_DEVELOPMENT ? DEV_API_URL : PROD_API_URL;
 

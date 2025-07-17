@@ -31,7 +31,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const logout = async () => {
     try {
-      await fetchApi('/auth/logout.php', { method: 'POST' });
+      await fetchApi('/auth/logout.php', { method: 'POST', credentials: 'include' });
     } catch (error) {
       console.error("Erro ao fazer logout na API:", error);
       // Mesmo se a API falhar, limpa o estado do frontend
@@ -46,7 +46,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const checkLoginStatus = async () => {
     setIsLoading(true);
     try {
-      const response = await fetchApi('/auth/check_session.php');
+      const response = await fetchApi('/auth/check_session.php', { credentials: 'include' });
       if (response.ok) {
         const data = await response.json();
         if (data.isLoggedIn && data.user) {

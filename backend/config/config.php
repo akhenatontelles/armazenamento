@@ -2,7 +2,7 @@
 // backend/config/config.php
 
 // Defina APP_URL primeiro, pois é usado na lógica CORS para OPTIONS
-define('APP_URL', 'https://capivaralab.com/armarzenamento'); // MUDADO PARA HTTPS
+define('APP_URL', 'https://capivaralab.com'); // Corrigido: só o domínio, sem /armarzenamento
 
 // Lidar com requisições OPTIONS (pre-flight) para CORS PRIMEIRO
 if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
@@ -63,6 +63,22 @@ define('ALLOWED_MIME_TYPES', [
 ]);
 // __DIR__ aqui é backend/config/ , então ../uploads aponta para backend/uploads
 define('BASE_UPLOAD_PATH', __DIR__ . '/../uploads');
+
+// Configurações PHP para upload
+ini_set('upload_max_filesize', '50M');
+ini_set('post_max_size', '50M');
+ini_set('max_input_time', 300);
+ini_set('max_execution_time', 300);
+
+// Configurar diretório de uploads
+if (!file_exists(BASE_UPLOAD_PATH)) {
+    mkdir(BASE_UPLOAD_PATH, 0755, true);
+}
+
+// Configurações de Segurança para Upload
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: SAMEORIGIN');
+header('X-XSS-Protection: 1; mode=block');
 
 // Configurações de Sessão
 define('SESSION_NAME', 'FileNestVaultSession');

@@ -18,29 +18,35 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($input)) {
 }
 
 // Validar dados de entrada
-$username = $input['username'] ?? '';
-$email = $input['email'] ?? '';
+$username = trim($input['username'] ?? '');
+$email = trim($input['email'] ?? '');
 $password = $input['password'] ?? '';
 
-if (empty($username) || empty($email) || empty($password)) {
+if ($username === '' || $email === '' || $password === '') {
+    error_log("Tentativa de cadastro com campos obrigatórios vazios: username='$username', email='$email'");
     json_response(400, ['error' => 'Nome de usuário, email e senha são obrigatórios.']);
 }
 
 if (strlen($username) < 3 || strlen($username) > 50) {
+    error_log("Nome de usuário fora do padrão: '$username'");
     json_response(400, ['error' => 'Nome de usuário deve ter entre 3 e 50 caracteres.']);
 }
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    error_log("Email inválido informado: '$email'");
     json_response(400, ['error' => 'Formato de email inválido.']);
 }
 if (strlen($email) > 100) {
+    error_log("Email muito longo informado: '$email'");
     json_response(400, ['error' => 'Email não pode exceder 100 caracteres.']);
 }
 
-if (strlen($password) < 6) { // Requisito de senha mais forte seria ideal
+if (strlen($password) < 6) {
+    error_log("Senha muito curta para usuário: '$username'");
     json_response(400, ['error' => 'Senha deve ter pelo menos 6 caracteres.']);
 }
-if (strlen($password) > 255) { // Limite para o hash
+if (strlen($password) > 255) {
+    error_log("Senha muito longa para usuário: '$username'");
     json_response(400, ['error' => 'Senha muito longa.']);
 }
 
@@ -75,14 +81,19 @@ try {
 
     // Inserir novo usuário
     // Por padrão, a role será 'user' conforme definido no schema do DB
-    $stmt = $pdo->prepare("INSERT INTO users (username, email, password_hash) VALUES (:username, :email, :password_hash)");
+    $stmt = $pdo->prepare("INSERT INTO users (username, email, password_hash, role) VALUES (:username, :email, :password_hash, :role)");
 
-    if ($stmt->execute([':username' => $username, ':email' => $email, ':password_hash' => $password_hash])) {
+    if ($stmt->execute([
+        ':username' => $username,
+        ':email' => $email,
+        ':password_hash' => $password_hash,
+        ':role' => 'user',
+    ])) {
         $user_id = $pdo->lastInsertId();
-        // Opcional: Logar o usuário automaticamente após o registro
+        // Logar o usuário automaticamente após o registro
         $_SESSION['user_id'] = (int)$user_id;
         $_SESSION['username'] = $username;
-        $_SESSION['role'] = 'user'; // Definir a role na sessão
+        $_SESSION['role'] = 'user';
         $_SESSION['last_activity'] = time();
         $_SESSION['session_created_at'] = time();
 

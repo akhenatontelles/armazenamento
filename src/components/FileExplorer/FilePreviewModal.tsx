@@ -57,11 +57,14 @@ export const FilePreviewModal = ({
         <div className="mt-4">
           {file.mimeType?.includes("pdf") && (
             <div className="w-full h-[600px]">
-              <iframe
-                src={file.url}
+              <object
+                data={file.url ? file.url + (file.url.includes('?') ? '&inline=1' : '?inline=1') : undefined}
+                type="application/pdf"
                 className="w-full h-full border border-border rounded"
                 title={file.name}
-              />
+              >
+                <p>Seu navegador não suporta visualização de PDFs. <a href={file.url}>Baixar arquivo</a></p>
+              </object>
             </div>
           )}
 
@@ -84,6 +87,8 @@ export const FilePreviewModal = ({
                   src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(file.url || '')}`}
                   className="w-full h-full border border-border rounded"
                   title={file.name}
+                  allow="fullscreen"
+                  allowFullScreen
                   onError={() => console.warn("Error loading Office viewer.")} // Basic error handling
                 />
               </div>
@@ -115,7 +120,7 @@ export const FilePreviewModal = ({
             // The DialogContent's max-h-[90vh] and overflow-auto will handle scrolling for large images.
             <div className="flex items-center justify-center py-4">
               <img
-                src={file.url}
+                src={file.url ? file.url + (file.url.includes('?') ? '&inline=1' : '?inline=1') : undefined}
                 alt={file.name}
                 // max-w-full ensures it doesn't exceed modal width.
                 // h-auto maintains aspect ratio.

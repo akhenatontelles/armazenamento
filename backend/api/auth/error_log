@@ -1,0 +1,64 @@
+[10-Jul-2025 22:42:20 UTC] Erro de PDO em login.php: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'akhena46_capivara.armarzenamento.users' doesn't exist
+[10-Jul-2025 22:47:39 UTC] Erro de PDO em login.php: SQLSTATE[HY093]: Invalid parameter number
+[10-Jul-2025 23:08:46 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function getPDOConnection() in /home4/akhena46/capivaralab.com/armarzenamento/backend/api/auth/login.php:33
+Stack trace:
+#0 {main}
+  thrown in /home4/akhena46/capivaralab.com/armarzenamento/backend/api/auth/login.php on line 33
+[10-Jul-2025 23:09:18 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function getPDOConnection() in /home4/akhena46/capivaralab.com/armarzenamento/backend/api/auth/login.php:33
+Stack trace:
+#0 {main}
+  thrown in /home4/akhena46/capivaralab.com/armarzenamento/backend/api/auth/login.php on line 33
+[10-Jul-2025 23:09:29 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function getPDOConnection() in /home4/akhena46/capivaralab.com/armarzenamento/backend/api/auth/login.php:33
+Stack trace:
+#0 {main}
+  thrown in /home4/akhena46/capivaralab.com/armarzenamento/backend/api/auth/login.php on line 33
+[10-Jul-2025 23:09:45 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function getPDOConnection() in /home4/akhena46/capivaralab.com/armarzenamento/backend/api/auth/login.php:33
+Stack trace:
+#0 {main}
+  thrown in /home4/akhena46/capivaralab.com/armarzenamento/backend/api/auth/login.php on line 33
+[10-Jul-2025 23:10:30 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function getPDOConnection() in /home4/akhena46/capivaralab.com/armarzenamento/backend/api/auth/login.php:33
+Stack trace:
+#0 {main}
+  thrown in /home4/akhena46/capivaralab.com/armarzenamento/backend/api/auth/login.php on line 33
+[10-Jul-2025 23:10:32 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function getPDOConnection() in /home4/akhena46/capivaralab.com/armarzenamento/backend/api/auth/login.php:33
+Stack trace:
+#0 {main}
+  thrown in /home4/akhena46/capivaralab.com/armarzenamento/backend/api/auth/login.php on line 33
+[10-Jul-2025 23:10:32 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function getPDOConnection() in /home4/akhena46/capivaralab.com/armarzenamento/backend/api/auth/login.php:33
+Stack trace:
+#0 {main}
+  thrown in /home4/akhena46/capivaralab.com/armarzenamento/backend/api/auth/login.php on line 33
+[10-Jul-2025 23:10:33 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function getPDOConnection() in /home4/akhena46/capivaralab.com/armarzenamento/backend/api/auth/login.php:33
+Stack trace:
+#0 {main}
+  thrown in /home4/akhena46/capivaralab.com/armarzenamento/backend/api/auth/login.php on line 33
+[10-Jul-2025 23:10:33 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function getPDOConnection() in /home4/akhena46/capivaralab.com/armarzenamento/backend/api/auth/login.php:33
+Stack trace:
+#0 {main}
+  thrown in /home4/akhena46/capivaralab.com/armarzenamento/backend/api/auth/login.php on line 33
+[10-Jul-2025 23:10:34 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function getPDOConnection() in /home4/akhena46/capivaralab.com/armarzenamento/backend/api/auth/login.php:33
+Stack trace:
+#0 {main}
+  thrown in /home4/akhena46/capivaralab.com/armarzenamento/backend/api/auth/login.php on line 33
+[10-Jul-2025 23:13:26 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function getPDOConnection() in /home4/akhena46/capivaralab.com/armarzenamento/backend/api/auth/login.php:33
+Stack trace:
+#0 {main}
+  thrown in /home4/akhena46/capivaralab.com/armarzenamento/backend/api/auth/login.php on line 33
+[10-Jul-2025 23:20:09 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function getPDOConnection() in /home4/akhena46/capivaralab.com/armarzenamento/backend/api/auth/login.php:33
+Stack trace:
+#0 {main}
+  thrown in /home4/akhena46/capivaralab.com/armarzenamento/backend/api/auth/login.php on line 33
+[11-Jul-2025 10:36:13 UTC] Erro de PDO em login.php: SQLSTATE[HY093]: Invalid parameter number
+[11-Jul-2025 10:37:07 UTC] Erro de PDO em login.php: SQLSTATE[HY093]: Invalid parameter number
+[11-Jul-2025 10:45:04 UTC] Erro de PDO em login.php: SQLSTATE[HY093]: Invalid parameter number
+[11-Jul-2025 10:45:27 UTC] Erro de PDO em login.php: SQLSTATE[HY093]: Invalid parameter number
+[11-Jul-2025 11:16:25 UTC] Erro de PDO em login.php: SQLSTATE[HY093]: Invalid parameter number
+[11-Jul-2025 11:19:32 UTC] Erro de PDO em login.php: SQLSTATE[HY093]: Invalid parameter number
+[11-Jul-2025 11:27:59 UTC] Erro de PDO em login.php: SQLSTATE[HY093]: Invalid parameter number
+[11-Jul-2025 11:29:26 UTC] Erro de PDO em login.php: SQLSTATE[HY093]: Invalid parameter number
+[11-Jul-2025 11:31:40 UTC] Erro de PDO em login.php: SQLSTATE[HY093]: Invalid parameter number
+[11-Jul-2025 11:38:07 UTC] Erro de PDO em login.php: SQLSTATE[HY093]: Invalid parameter number
+[11-Jul-2025 11:38:09 UTC] Erro de PDO em login.php: SQLSTATE[HY093]: Invalid parameter number
+[11-Jul-2025 11:52:12 UTC] Erro de PDO em login.php: SQLSTATE[HY093]: Invalid parameter number
+[11-Jul-2025 11:57:09 UTC] Erro de PDO em login.php: SQLSTATE[HY093]: Invalid parameter number
+[11-Jul-2025 12:11:55 UTC] Erro de PDO em login.php: SQLSTATE[HY093]: Invalid parameter number

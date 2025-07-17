@@ -1,5 +1,6 @@
 <?php
 // backend/api/files/create_folder.php
+require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../includes/functions.php';
 require_once __DIR__ . '/../../includes/db_connect.php';
 

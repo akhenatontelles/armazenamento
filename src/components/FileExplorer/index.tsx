@@ -289,7 +289,7 @@ const FileExplorer = ({ isAdmin, defaultViewMode = "grid", onViewModeChange }: F
           if (entry.isFile) {
             const file = item.getAsFile();
             if (file) {
-              if (await uploadSingleFileToServer(file, currentFolder)) {
+              if (await uploadSingleFileToServer(file, currentFolder, (file as any).webkitRelativePath || file.name)) {
                 refreshNeeded = true;
               }
             }

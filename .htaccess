@@ -1,0 +1,12 @@
+# .htaccess para SPA React (Vite, CRA, etc)
+# Redireciona todas as rotas para index.html, exceto arquivos e diretórios reais
+
+RewriteEngine On
+
+# Permite acesso direto a arquivos e pastas reais
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Redireciona tudo para index.html
+RewriteRule ^ index.html [L]

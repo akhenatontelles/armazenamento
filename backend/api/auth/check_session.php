@@ -1,12 +1,15 @@
 <?php
 // backend/api/auth/check_session.php
+require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../includes/functions.php';
 
-// Inicia a sessão de forma segura e consistente
 secure_session_start();
 
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+
 if (is_user_logged_in()) {
-    // A sessão é válida, envia os dados do usuário que estão na sessão.
     json_response(200, [
         'isLoggedIn' => true,
         'user' => [
@@ -16,7 +19,6 @@ if (is_user_logged_in()) {
         ]
     ]);
 } else {
-    // Nenhuma sessão válida encontrada.
     json_response(401, ['isLoggedIn' => false, 'error' => 'Nenhuma sessão ativa.']);
 }
 ?>

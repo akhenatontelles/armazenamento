@@ -11,7 +11,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
   const location = useLocation();
 
   if (isLoading) {
-    // Mostrar um loader enquanto verifica o estado de autenticação
+    // Exibir spinner enquanto verifica autenticação (evita "piscadas")
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
@@ -29,7 +29,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
     // Usuário logado, mas não tem a role permitida para esta rota
     // Redireciona para uma página "Não Autorizado" ou para o dashboard padrão do usuário
     // Por simplicidade, redirecionaremos para o dashboard apropriado ou raiz se o dashboard não for acessível
-    toast({ title: "Acesso Negado", description: "Você não tem permissão para acessar esta página.", variant: "destructive", duration: 4000});
+    // Apenas redireciona para o dashboard apropriado, sem toast
     return <Navigate to={user.role === 'admin' ? "/admin" : "/dashboard"} replace />;
     // Ou para uma página específica /unauthorized: return <Navigate to="/unauthorized" replace />;
   }

@@ -1,5 +1,7 @@
 <?php
+error_log('FILES: ' . print_r($_FILES, true));
 // backend/api/files/upload.php
+require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../includes/functions.php';
 require_once __DIR__ . '/../../includes/db_connect.php';
 
@@ -22,7 +24,7 @@ $parent_id = (empty($parent_id_input) || $parent_id_input === 'null' || $parent_
 // webkitRelativePath é enviado pelo input de diretório e pelo drag-n-drop do frontend
 $webkit_relative_path = $_POST['webkitRelativePath'] ?? null;
 
-if (!isset($_FILES['file'])) {
+if (empty($_FILES['file'])) {
     json_response(400, ['error' => 'Nenhum arquivo enviado ou erro no upload (verifique o nome do campo "file").']);
 }
 
@@ -47,13 +49,27 @@ $file_tmp_path = $file_upload['tmp_name'];
 $file_size = $file_upload['size'];
 $file_mime_type = mime_content_type($file_tmp_path); // Obter MIME type real do conteúdo
 
-if (empty($original_filename)) {
-    json_response(400, ['error' => 'Nome do arquivo original está vazio.']);
+// Verificar se o arquivo existe e é legível
+if (!file_exists($file_tmp_path) || !is_readable($file_tmp_path)) {
+    error_log("Erro: Arquivo temporário não encontrado ou não legível: " . $file_tmp_path);
+    json_response(400, ['error' => 'Arquivo temporário não encontrado ou não legível.']);
 }
+
+// Verificar se o arquivo tem conteúdo
 if ($file_size === 0) {
-    // Permitir arquivos vazios? Decisão: não permitir arquivos de 0 bytes.
+    error_log("Erro: Arquivo vazio recebido: " . $original_filename);
     json_response(400, ['error' => 'Arquivo enviado está vazio (0 bytes).']);
 }
+
+// Sanitizar o nome do arquivo
+$sanitized_name = preg_replace('/[^a-zA-Z0-9._-]/', '', $original_filename);
+if (empty($sanitized_name)) {
+    error_log("Erro: Nome de arquivo inválido: " . $original_filename);
+    json_response(400, ['error' => 'Nome do arquivo inválido.']);
+}
+
+// Log para debug
+error_log("Upload iniciado para arquivo: " . $original_filename . " (tamanho: " . $file_size . " bytes)");
 
 // Validação de tamanho máximo
 if ($file_size > MAX_UPLOAD_SIZE_BYTES) {
@@ -68,9 +84,9 @@ if (!in_array($file_mime_type, ALLOWED_MIME_TYPES, true)) {
     json_response(400, ['error' => 'Tipo de arquivo não permitido (' . $file_mime_type . ').']);
 }
 
-
 $pdo = getPDOConnection();
 if (!$pdo) {
+    error_log("Erro: Falha na conexão com o banco de dados");
     json_response(500, ['error' => 'Falha na conexão com o banco de dados.']);
 }
 

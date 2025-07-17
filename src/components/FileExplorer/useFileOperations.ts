@@ -2,6 +2,7 @@ import { useState, useCallback } from "react"; // Removed useEffect, using useCa
 import { useToast } from "@/hooks/use-toast";
 import { FileItem } from "./types";
 import { fetchApi, fetchWithFormData } from "@/config"; // Import API helpers
+// fetchApi e fetchWithFormData já usam credentials: 'include' por padrão
 
 export const useFileOperations = () => {
   // This 'files' state will now typically hold the content of the currently viewed folder,
@@ -30,6 +31,7 @@ export const useFileOperations = () => {
         ...item,
         createdAt: new Date(item.createdAt),
         updatedAt: new Date(item.updatedAt),
+        mimeType: item.mime_type // padroniza para camelCase
       }));
       setFiles(processedData);
     } catch (error: any) {
@@ -151,21 +153,34 @@ export const useFileOperations = () => {
   };
 
   const deleteFile = async (fileToDelete: FileItem, currentFolderId: string | null) => {
+    if (!fileToDelete.id) {
+      toast({ title: "Erro ao Excluir", description: "Arquivo inválido ou sem ID.", variant: "destructive" });
+      return;
+    }
     setIsLoading(true);
     try {
+      const body = JSON.stringify({ id: fileToDelete.id });
+      console.log("[deleteFile] Enviando para backend:", body);
       const response = await fetchApi('/files/delete.php', {
         method: 'POST',
-        body: JSON.stringify({ id: fileToDelete.id }),
+        body,
       });
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseErr) {
+        console.error("[deleteFile] Erro ao fazer parse do JSON:", parseErr, response);
+        toast({ title: "Erro ao Excluir", description: "Resposta inesperada do servidor (não é JSON)", variant: "destructive" });
+        return;
+      }
       if (!response.ok) {
         throw new Error(data.error || "Falha ao excluir item.");
       }
       toast({ title: "Item Excluído", description: data.message || `"${fileToDelete.name}" foi excluído.` });
       await fetchFilesAndFolders(currentFolderId); // Recarregar a pasta atual
     } catch (error: any) {
-      console.error("Error deleting file:", error);
-      toast({ title: "Erro ao Excluir", description: error.message, variant: "destructive" });
+      console.error("[deleteFile] Error:", error);
+      toast({ title: "Erro ao Excluir", description: error.message || String(error), variant: "destructive" });
     } finally {
       setIsLoading(false);
     }

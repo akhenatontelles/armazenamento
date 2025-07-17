@@ -5,21 +5,21 @@ import { Badge } from "@/components/ui/badge";
 import UserManagement from "@/components/UserManagement";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useAuth } from "@/contexts/AuthContext"; // Added import
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, isLoading, logout } = useAuth(); // Added useAuth hook
 
   useEffect(() => {
-    const userType = localStorage.getItem("userType");
-    if (userType !== "admin") {
+    if (!isLoading && (!user || user.role !== "admin")) {
       navigate("/");
     }
-  }, [navigate]);
+  }, [user, isLoading, navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("userType");
-    localStorage.removeItem("username");
+  const handleLogout = async () => {
+    await logout();
     toast({
       title: "Logout realizado",
       description: "Até logo!",

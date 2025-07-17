@@ -6,6 +6,7 @@ export interface FileItem {
   mimeType?: string;
   parentId?: string;
   createdAt: Date;
+  updatedAt?: string | Date;
   url?: string;
   path?: string;
 }

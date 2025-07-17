@@ -1,4 +1,5 @@
 <?php
+ob_start();
 // backend/api/files/delete.php
 require_once __DIR__ . '/../../includes/functions.php';
 require_once __DIR__ . '/../../includes/db_connect.php';
@@ -15,20 +16,34 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') { // Ou DELETE, mas POST é mais fác
 
 $user_id = get_logged_in_user_id();
 
-$input = json_decode(file_get_contents('php://input'), true);
+$input_raw = file_get_contents('php://input');
+$input = json_decode($input_raw, true);
 if (json_last_error() !== JSON_ERROR_NONE || !is_array($input)) {
-    json_response(400, ['error' => 'JSON inválido ou malformado.']);
+    error_log("delete.php: JSON inválido recebido: " . $input_raw);
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'error' => 'JSON inválido ou malformado.']);
+    ob_end_clean();
+    exit;
 }
 
 $item_id = $input['id'] ?? '';
+error_log("delete.php: User $user_id solicitou exclusão do item_id: '$item_id'");
 
 if (empty($item_id)) {
-    json_response(400, ['error' => 'ID do item a ser excluído é obrigatório.']);
+    error_log("delete.php: ID do item a ser excluído está vazio. User: $user_id");
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'error' => 'ID do item a ser excluído é obrigatório.']);
+    ob_end_clean();
+    exit;
 }
 
 $pdo = getPDOConnection();
 if (!$pdo) {
-    json_response(500, ['error' => 'Falha na conexão com o banco de dados.']);
+    error_log("delete.php: Falha na conexão com o banco de dados");
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'error' => 'Falha na conexão com o banco de dados.']);
+    ob_end_clean();
+    exit;
 }
 
 try {
@@ -53,7 +68,9 @@ try {
             // Se o item principal não for encontrado, pode ser um erro ou já foi excluído.
             if ($current_id_to_process === $item_id) {
                 $pdo->rollBack();
-                json_response(404, ['error' => 'Item não encontrado ou você não tem permissão para excluí-lo.']);
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'error' => 'Item não encontrado ou você não tem permissão para excluí-lo.']);
+                exit;
             }
             // Se um filho não for encontrado, apenas pular (pode ter sido excluído em outra operação)
             continue;
@@ -79,7 +96,9 @@ try {
         // Isso pode acontecer se o item_id inicial não pertencer ao usuário ou não existir.
         // A primeira query dentro do loop já trataria isso para o item_id principal.
         $pdo->rollBack();
-        json_response(404, ['error' => 'Nenhum item encontrado para exclusão.']);
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'error' => 'Nenhum item encontrado para exclusão.']);
+        exit;
     }
 
     // Excluir do sistema de arquivos (do mais profundo para o mais superficial para pastas)
@@ -94,14 +113,14 @@ try {
             if ($item_fs['type'] === 'file') {
                 if (!@unlink($full_disk_path)) {
                     error_log("Falha ao excluir arquivo do disco: " . $full_disk_path);
-                    // Considerar se deve parar ou continuar. Por enquanto, continua e tenta excluir do DB.
+                    $errors[] = "Falha ao excluir arquivo: " . basename($full_disk_path);
                 }
             } elseif ($item_fs['type'] === 'folder') {
                 // Tentar remover diretório. rmdir só funciona em diretórios vazios.
                 // Como estamos excluindo filhos primeiro (devido ao reverse), deve funcionar se todos os arquivos filhos foram excluídos com sucesso.
                 if (!@rmdir($full_disk_path)) {
-                    // Se falhar, pode ser que não esteja vazio (arquivos não foram excluídos ou erro de permissão)
                     error_log("Falha ao excluir diretório do disco (pode não estar vazio ou permissão): " . $full_disk_path);
+                    $errors[] = "Falha ao excluir diretório: " . basename($full_disk_path);
                 }
             }
         } else {
@@ -115,25 +134,39 @@ try {
         $sql_delete_db = "DELETE FROM files WHERE user_id = ? AND id IN ($placeholders)";
         $stmt_delete_db = $pdo->prepare($sql_delete_db);
 
-        $params_for_delete = array_merge([$user_id], $visited_ids_for_db_deletion);
-
-        if (!$stmt_delete_db->execute($params_for_delete)) {
+        $params = array_merge([$user_id], $visited_ids_for_db_deletion);
+        if (!$stmt_delete_db->execute($params)) {
             $pdo->rollBack();
-            error_log("Falha ao excluir itens do DB. UserID: {$user_id}, IDs: " . implode(',', $visited_ids_for_db_deletion));
-            json_response(500, ['error' => 'Erro ao excluir itens do banco de dados.']);
+            error_log("Erro ao excluir do banco de dados: " . $stmt_delete_db->errorInfo()[2]);
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'error' => 'Erro ao excluir do banco de dados.']);
+            exit;
         }
     }
 
     $pdo->commit();
-    json_response(200, ['message' => 'Item(s) excluído(s) com sucesso.']);
+    if (!empty($errors)) {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'error' => 'Ocorreram erros durante a exclusão.', 'errors' => $errors]);
+    } else {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => true, 'message' => 'Item(s) excluído(s) com sucesso.']);
+    }
 
 } catch (PDOException $e) {
-    if($pdo->inTransaction()) $pdo->rollBack();
+    if ($pdo->inTransaction()) $pdo->rollBack();
     error_log("Erro de PDO em delete.php: " . $e->getMessage());
-    json_response(500, ['error' => 'Erro de banco de dados.']);
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'error' => 'Erro de banco de dados.']);
+    ob_end_clean();
+    exit;
 } catch (Exception $e) {
     if($pdo->inTransaction()) $pdo->rollBack();
     error_log("Erro geral em delete.php: " . $e->getMessage());
-    json_response(500, ['error' => 'Ocorreu um erro inesperado.']);
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'error' => 'Ocorreu um erro inesperado.']);
+    ob_end_clean();
+    exit;
 }
+ob_end_clean();
 ?>

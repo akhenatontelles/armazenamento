@@ -74,14 +74,56 @@ try {
         ob_end_clean();
     }
 
+    // Configurar headers baseados no tipo MIME
+    $mime_type = $file_info['mime_type'] ?: 'application/octet-stream';
+    
+    // Remover X-Frame-Options para PDFs e documentos quando inline=1
+    if (isset($_GET['inline']) && $_GET['inline'] == '1') {
+        if (in_array($mime_type, [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        ])) {
+            header('X-Frame-Options: ALLOW-FROM ' . $_SERVER['HTTP_ORIGIN']);
+        }
+    }
+    
     // Definir cabeçalhos para o download
     header('Content-Description: File Transfer');
-    header('Content-Type: ' . ($file_info['mime_type'] ?: 'application/octet-stream')); // Fallback para octet-stream
-    header('Content-Disposition: attachment; filename="' . basename($file_info['name']) . '"'); // Usa o nome original do arquivo
-    header('Expires: 0');
-    header('Cache-Control: must-revalidate');
-    header('Pragma: public');
-    header('Content-Length: ' . $file_info['size']);
+    header('Content-Type: ' . $mime_type);
+    
+    if (isset($_GET['inline']) && $_GET['inline'] == '1') {
+        header('Content-Disposition: inline; filename="' . basename($file_info['name']) . '"');
+    } else {
+        header('Content-Disposition: attachment; filename="' . basename($file_info['name']) . '"');
+            header('Expires: 0');
+            header('Cache-Control: must-revalidate');
+            header('Pragma: public');
+            header('Content-Length: ' . $file_info['size']);
+            break;
+        
+        case 'image/jpeg':
+        case 'image/png':
+        case 'image/gif':
+            header('Content-Type: ' . $mime_type);
+            header('Content-Disposition: inline; filename="' . basename($file_info['name']) . '"');
+            header('Expires: 0');
+            header('Cache-Control: must-revalidate');
+            header('Pragma: public');
+            header('Content-Length: ' . $file_info['size']);
+            break;
+        
+        default:
+            header('Content-Type: ' . $mime_type);
+            header('Content-Disposition: attachment; filename="' . basename($file_info['name']) . '"');
+            header('Expires: 0');
+            header('Cache-Control: must-revalidate');
+            header('Pragma: public');
+            header('Content-Length: ' . $file_info['size']);
+            break;
+    }
 
     // Ler e enviar o arquivo em chunks para economizar memória com arquivos grandes
     $chunk_size = 1024 * 1024; // 1MB por chunk
